@@ -1,45 +1,47 @@
 import numpy as np
 import cv2
 import os
-os.chdir("/home/pi/opencv-3.4.1/data/haarcascades")
+
 # multiple cascades: https://github.com/Itseez/opencv/tree/master/data/haarcascades
-faceCascade = cv2.CascadeClassifier('/home/pi/opencv-3.4.1/data/haarcascades/haarcascade_frontalface_default.xml')
-smileCascade = cv2.CascadeClassifier('/home/pi/opencv-3.4.1/data/haarcascades/haarcascade_smile.xml')
+
+project_path = os.path.dirname(os.path.abspath(__file__))
+faceCascade_file = os.path.join(project_path, "haarcascade_frontalface_default.xml")
+smileCascade_file = os.path.join(project_path, "haarcascade_smile.xml")
+
+faceCascade = cv2.CascadeClassifier(faceCascade_file)
+smileCascade = cv2.CascadeClassifier(smileCascade_file)
 
 cap = cv2.VideoCapture(0)
-cap.set(3,640) # set Width
-cap.set(4,480) # set Height
+cap.set(3, 640)  # set Width
+cap.set(4, 480)  # set Height
 
 while True:
     ret, img = cap.read()
     img = cv2.flip(img, -1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = faceCascade.detectMultiScale(
-        gray,
-        scaleFactor=1.3,
-        minNeighbors=5,
-        minSize=(30, 30)
+        gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30)
     )
 
-    for (x,y,w,h) in faces:
-        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = img[y:y+h, x:x+w]
+    for x, y, w, h in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        roi_gray = gray[y : y + h, x : x + w]
+        roi_color = img[y : y + h, x : x + w]
 
         smile = smileCascade.detectMultiScale(
             roi_gray,
-            scaleFactor= 1.5,
+            scaleFactor=1.5,
             minNeighbors=15,
             minSize=(25, 25),
-            )
+        )
 
-        for (xx, yy, ww, hh) in smile:
+        for xx, yy, ww, hh in smile:
             cv2.rectangle(roi_color, (xx, yy), (xx + ww, yy + hh), (0, 255, 0), 2)
 
-        cv2.imshow('video', img)
+        cv2.imshow("video", img)
 
-    k = cv2.waitKey(30) & 0xff
-    if k == 27: # press 'ESC' to quit
+    k = cv2.waitKey(30) & 0xFF
+    if k == 27:  # press 'ESC' to quit
         break
 
 cap.release()
